@@ -1,3 +1,4 @@
+
 name: Build Super Sales Tracker APK
 
 on:
@@ -24,20 +25,32 @@ jobs:
           gradle-version: '8.9'
 
       - name: Extract and Build APK
-
         run: |
+          set -e
+
           ZIP_FILE=$(find . -maxdepth 1 -name '*.zip' | head -n 1)
-          mkdir extracted
+
+          if [ -z "$ZIP_FILE" ]; then
+            echo "Error: Project ZIP file not found!"
+            exit 1
+          fi
+
+          mkdir -p extracted
           unzip -q "$ZIP_FILE" -d extracted
+
           PROJECT_DIR=$(find extracted -name settings.gradle.kts -printf '%h\n' | head -n 1)
+
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "Error: Gradle project not found!"
+            exit 1
+          fi
+
           MAIN_FILE=$(find "$PROJECT_DIR/app/src/main/java" -name MainActivity.kt | head -n 1)
-          sed -i '1i@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)' "$MAIN_FILE"
-          gradle -p "$PROJECT_DIR" -Pkotlin.jvm.target.validation.mode=warning assembleDebug
-          ZIP_FILE=$(find . -maxdepth 1 -name '*.zip' | head -n 1)
-          mkdir extracted
-          unzip -q "$ZIP_FILE" -d extracted
-          PROJECT_DIR=$(find extracted -name settings.gradle.kts -printf '%h\n' | head -n 1)MAIN_FILE=$(find "$PROJECT_DIR/app/src/main/java" -name MainActivity.kt | head -n 1)
-sed -i '1i@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)' "$MAIN_FILE"
+
+          if [ -n "$MAIN_FILE" ]; then
+            sed -i '1i@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)' "$MAIN_FILE"
+          fi
+
           gradle -p "$PROJECT_DIR" -Pkotlin.jvm.target.validation.mode=warning assembleDebug
 
       - name: Upload APK
@@ -45,3 +58,4 @@ sed -i '1i@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class
         with:
           name: Super-Sales-Tracker-APK
           path: extracted/**/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
