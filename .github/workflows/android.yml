@@ -28,7 +28,8 @@ jobs:
           ZIP_FILE=$(find . -maxdepth 1 -name '*.zip' | head -n 1)
           mkdir extracted
           unzip -q "$ZIP_FILE" -d extracted
-          PROJECT_DIR=$(find extracted -name settings.gradle.kts -printf '%h\n' | head -n 1)
+          PROJECT_DIR=$(find extracted -name settings.gradle.kts -printf '%h\n' | head -n 1)MAIN_FILE=$(find "$PROJECT_DIR/app/src/main/java" -name MainActivity.kt | head -n 1)
+sed -i '1i@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)' "$MAIN_FILE"
           gradle -p "$PROJECT_DIR" -Pkotlin.jvm.target.validation.mode=warning assembleDebug
 
       - name: Upload APK
