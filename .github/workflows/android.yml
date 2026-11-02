@@ -24,7 +24,7 @@ jobs:
           gradle-version: '8.9'
 
       - name: Extract and Build APK
-        run:      - name: Extract and Build APK
+
         run: |
           ZIP_FILE=$(find . -maxdepth 1 -name '*.zip' | head -n 1)
           mkdir extracted
